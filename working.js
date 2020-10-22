@@ -1,5 +1,4 @@
 
-
 const http = require('https');
 const fileSystem = require('fs');
 
@@ -45,7 +44,6 @@ let downloadOrgUnitData = ( getOptions ) => {
             else{
                 reject( `Connection with server: ${getOptions.hostname} refused with Status code ${res.statusCode}` );
             }
-
             res.on('data', receivedData => {
                     fileSystem.appendFile( outPutFile, receivedData, function (err) {
                         if (err) return console.error(err);
@@ -61,8 +59,6 @@ let downloadOrgUnitData = ( getOptions ) => {
           });
           
         req.end();
-
-
     });
 }
 
@@ -87,12 +83,11 @@ let uploadOrgUnitData = ( postOptions ) => {
 
 
 let startProgram = async () => {
+    let downloadResponse = await downloadOrgUnitData( getOptions ).catch( error => console.error( error ) );
+    console.log( downloadResponse );
 
- let downloadResponse = await downloadOrgUnitData( getOptions ).catch( error => console.error( error ) );
- console.log( downloadResponse );
-
- let uploadResponse = await uploadOrgUnitData( postOptions ).catch( error => console.error( error));
- console.log( uploadResponse );
+    let uploadResponse = await uploadOrgUnitData( postOptions ).catch( error => console.error( error));
+    console.log( uploadResponse );
 }
 
 
