@@ -1,24 +1,18 @@
 const propertiesReader = require('properties-reader');
 const http = require('https');
 const fileSystem = require('fs');
-
+const args = require('minimist')(process.argv.slice(2))
 
 //TODO get it from command line
-let properies = propertiesReader( '/var/opt/properties.file' );
-let downloadServerHost = properies.get('download.server.host');
-let downloadServerPassword = properies.get('download.server.password');
-let uploadServerHost = properies.get('upload.server.host');
-let uploadServerPassword = properies.get('upload.server.password');
-
-
+let properies = propertiesReader( args['file'] );
 let postData = 'data';
 let outPutFile = 'metadata_' + Date.now() +'.json';
-let downloadServerAuth = 'Basic ' + Buffer.from(`admin:${downloadServerPassword}`).toString('base64');
-let uploadServerAuth = 'Basic ' + Buffer.from(`admin:${uploadServerPassword}`).toString('base64');
+let downloadServerAuth = 'Basic ' + Buffer.from(`${properies.get('download.server.username')}:${properies.get('download.server.password')}`).toString('base64');
+let uploadServerAuth = 'Basic ' + Buffer.from(`${properies.get('upload.server.username')}:${properies.get('upload.server.password')}`).toString('base64');
 
 let getOptions = {
 	"method": "GET",
-	"hostname": downloadServerHost,
+	"hostname": properies.get('download.server.host'),
 	"path": '/dev/api/metadata.json?skipSharing=false&download=true&organisationUnits=true&organisationUnitGroups=true&organisationUnitGroupSets=true',
 	"headers": {
 	  "Content-Type": "application/json",
@@ -29,7 +23,7 @@ let getOptions = {
 
   let postOptions = {
 	"method": "POST",
-	"hostname": uploadServerHost,
+	"hostname": properies.get('upload.server.host'),
 	"path": '/tracker/api/metadata.json',
 	"headers": {
 	  "Content-Type": "application/json",
