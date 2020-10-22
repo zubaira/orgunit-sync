@@ -36,6 +36,7 @@ let getOptions = {
 
 let downloadOrgUnitData = ( getOptions ) => {
 
+    let data = [];
     return new Promise( (resolve,reject) => {
         const req = http.request( getOptions, res => {
             if ( res.statusCode  === 200 ){
@@ -45,13 +46,15 @@ let downloadOrgUnitData = ( getOptions ) => {
                 reject( `Connection with server: ${getOptions.hostname} refused with Status code ${res.statusCode}` );
             }
             res.on('data', receivedData => {
-                    fileSystem.appendFile( outPutFile, receivedData, function (err) {
-                        if (err) return console.error(err);
-                        });                 
-                  })
+                data.push( receivedData );                
+            })
                 .on( 'end', () => {
+                    fileSystem.appendFile( outPutFile, data, function (err) {
+                    if (err) return console.error(err);
+
                     resolve('OrganisationUnit data downloaded in file: ' + outPutFile );
-                 })
+                    }); 
+                })
         });
         
         req.on('error', error => {
