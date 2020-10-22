@@ -1,10 +1,10 @@
+'use strict';
 const propertiesReader = require('properties-reader');
 const http = require('https');
 const fileSystem = require('fs');
 const args = require('minimist')(process.argv.slice(2))
 
-//TODO get it from command line
-let properies = propertiesReader( args['file'] );
+let properies = loadProperties() ;
 let postData = 'data';
 let outPutFile = 'metadata_' + Date.now() +'.json';
 let downloadServerAuth = 'Basic ' + Buffer.from(`${properies.get('download.server.username')}:${properies.get('download.server.password')}`).toString('base64');
@@ -13,7 +13,7 @@ let uploadServerAuth = 'Basic ' + Buffer.from(`${properies.get('upload.server.us
 let getOptions = {
 	"method": "GET",
 	"hostname": properies.get('download.server.host'),
-	"path": '/dev/api/metadata.json?skipSharing=false&download=true&organisationUnits=true&organisationUnitGroups=true&organisationUnitGroupSets=true',
+	"path": properies.get('download.server.path'),
 	"headers": {
 	  "Content-Type": "application/json",
 	  "Authorization": downloadServerAuth,
@@ -24,7 +24,7 @@ let getOptions = {
   let postOptions = {
 	"method": "POST",
 	"hostname": properies.get('upload.server.host'),
-	"path": '/tracker/api/metadata.json',
+	"path": properies.get('upload.server.path'),
 	"headers": {
 	  "Content-Type": "application/json",
 	  "Authorization": uploadServerAuth,
@@ -83,14 +83,24 @@ let uploadOrgUnitData = ( postOptions ) => {
     });
 }
 
+function loadProperties()
+{
+    if ( !fileSystem.existsSync( args['file'])){
+        console.error('Properties file not found');
+        process.exit();
+    }
+
+    console.log('Loading properties from file');
+    return new propertiesReader( args['file']);
+}
 
 let startSynchronization = async () => {
+
     let downloadResponse = await downloadOrgUnitData( getOptions ).catch( error => console.error( error ) );
     console.log( downloadResponse );
 
     let uploadResponse = await uploadOrgUnitData( postOptions ).catch( error => console.error( error));
     console.log( uploadResponse );
 }
-
 
 startSynchronization();
