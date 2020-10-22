@@ -5,8 +5,8 @@ const fileSystem = require('fs');
 
 let postData = 'data';
 let outPutFile = 'metadata_' + Date.now() +'.json';
-let downloadServerAuth = 'Basic ' + Buffer.from('admin:district').toString('base64');
-let uploadServerAuth = 'Basic ' + Buffer.from('admin:pQY#mur3f@66876$').toString('base64');
+let downloadServerAuth = 'Basic ' + Buffer.from('admin:').toString('base64');
+let uploadServerAuth = 'Basic ' + Buffer.from('admin:').toString('base64');
 
 //TODO get it from command line
 let downloadServerHost = 'play.dhis2.org';
