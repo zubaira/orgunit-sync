@@ -1,15 +1,20 @@
-
+const propertiesReader = require('properties-reader');
 const http = require('https');
 const fileSystem = require('fs');
 
-let postData = 'data';
-let outPutFile = 'metadata_' + Date.now() +'.json';
-let downloadServerAuth = 'Basic ' + Buffer.from('admin:').toString('base64');
-let uploadServerAuth = 'Basic ' + Buffer.from('admin:').toString('base64');
 
 //TODO get it from command line
-let downloadServerHost = 'play.dhis2.org';
-let uploadServerHost = "dhis2.ntp.gov.pk";
+let properies = propertiesReader( '/var/opt/properties.file' );
+let downloadServerHost = properies.get('download.server.host');
+let downloadServerPassword = properies.get('download.server.password');
+let uploadServerHost = properies.get('upload.server.host');
+let uploadServerPassword = properies.get('upload.server.password');
+
+
+let postData = 'data';
+let outPutFile = 'metadata_' + Date.now() +'.json';
+let downloadServerAuth = 'Basic ' + Buffer.from(`admin:${downloadServerPassword}`).toString('base64');
+let uploadServerAuth = 'Basic ' + Buffer.from(`admin:${uploadServerPassword}`).toString('base64');
 
 let getOptions = {
 	"method": "GET",
@@ -85,7 +90,7 @@ let uploadOrgUnitData = ( postOptions ) => {
 }
 
 
-let startProgram = async () => {
+let startSynchronization = async () => {
     let downloadResponse = await downloadOrgUnitData( getOptions ).catch( error => console.error( error ) );
     console.log( downloadResponse );
 
@@ -94,4 +99,4 @@ let startProgram = async () => {
 }
 
 
-startProgram();
+startSynchronization();
