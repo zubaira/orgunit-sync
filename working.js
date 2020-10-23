@@ -13,17 +13,6 @@ let downloadServerAuth = 'Basic ' + Buffer.from(`${properies.get('download.serve
 let uploadServerAuth = 'Basic ' + Buffer.from(`${properies.get('upload.server.username')}:${properies.get('upload.server.password')}`).toString('base64');
 let inMemoryData = null;
 
-let getOptions = {
-	"hostname": properies.get('download.server.host'),
-	"path": properies.get('download.server.path'),
-	"headers": {
-	  "Content-Type": "application/json",
-	  "Authorization": downloadServerAuth,
-	  "Accept":"application/json"
-	}
-  };
-
-
 let getRequestArgs = {
     headers: { 
         "Content-Type": "application/json",
@@ -32,15 +21,7 @@ let getRequestArgs = {
     }
 };
 
-  let postRequestArgs = {
-	"headers": {
-	  "Content-Type": "application/json",
-	  "Authorization": uploadServerAuth,
-	  "Accept":"application/json"
-	}
-  };
-
-let downloadOrgUnitData = (getOptions) => {
+let downloadData = (getRequestArgs) => {
         return new Promise((resolve,reject) => {
             client.get( properies.get('download.server.url'), getRequestArgs, (data, response) => {
                     if ( response.statusCode === 200){
@@ -61,8 +42,19 @@ let downloadOrgUnitData = (getOptions) => {
         });
 }
 
-let uploadOrgUnitData = ( postOptions ) => {
+let uploadData = () => {
          return new Promise((resolve,reject) => {
+
+            let postRequestArgs = {
+                
+                data:inMemoryData,
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": uploadServerAuth,
+                  "Accept":"application/json"
+                }
+              };
+
              client.post( properies.get('upload.server.url'), postRequestArgs, (data, response) => {
                 if ( response.statusCode === 200){
                     console.log('Connected to server: ' + properies.get('upload.server.host') + ' with statusCode: ' + response.statusCode );
@@ -89,10 +81,10 @@ function loadProperties()
 
 let startSynchronization = async () => {
 
-    let downloadResponse = await downloadOrgUnitData(getOptions).catch(error => console.error(error));
+    let downloadResponse = await downloadData(getRequestArgs).catch(error => console.error(error));
     console.log(downloadResponse);
 
-    let uploadResponse = await uploadOrgUnitData(postRequestArgs).catch(error => console.error(error));
+    let uploadResponse = await uploadData().catch(error => console.error(error));
     console.log(uploadResponse);
 }
 
