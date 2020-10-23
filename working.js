@@ -44,9 +44,7 @@ let downloadData = (getRequestArgs) => {
 
 let uploadData = () => {
          return new Promise((resolve,reject) => {
-
             let postRequestArgs = {
-                
                 data:inMemoryData,
                 headers: {
                   "Content-Type": "application/json",
@@ -58,15 +56,25 @@ let uploadData = () => {
              client.post( properies.get('upload.server.url'), postRequestArgs, (data, response) => {
                 if ( response.statusCode === 200){
                     console.log('Connected to server: ' + properies.get('upload.server.host') + ' with statusCode: ' + response.statusCode );
+                    console.log( JSON.stringify(data) );
                 }
                 else{
                     reject('Connection with server ' + properies.get('upload.server.host') +' refused with statusCode: ' + response.statusCode)
+                   
                 }
-        
-        }); 
-
+        });
     });
 }
+
+let startSynchronization = async () => {
+    let downloadResponse = await downloadData(getRequestArgs).catch(error => {console.error(error); process.exit()});
+    console.log(downloadResponse);
+
+    let uploadResponse = await uploadData().catch(error => {console.error(error); process.exit()});
+    console.log(uploadResponse);
+}
+
+startSynchronization();
 
 function loadProperties()
 {
@@ -78,14 +86,3 @@ function loadProperties()
     console.log('Loading properties from file');
     return new propertiesReader(commandLineArg['file']);
 }
-
-let startSynchronization = async () => {
-
-    let downloadResponse = await downloadData(getRequestArgs).catch(error => console.error(error));
-    console.log(downloadResponse);
-
-    let uploadResponse = await uploadData().catch(error => console.error(error));
-    console.log(uploadResponse);
-}
-
-startSynchronization();
