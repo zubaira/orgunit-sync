@@ -36,7 +36,6 @@ let downloadData = (getRequestArgs) => {
                     else{
                         reject('Connection with server ' + properies.get('download.server.host') +' refused with statusCode: ' + response.statusCode)
                     }
-            
             });
         
         });
@@ -60,7 +59,6 @@ let uploadData = () => {
                 }
                 else{
                     reject('Connection with server ' + properies.get('upload.server.host') +' refused with statusCode: ' + response.statusCode)
-                   
                 }
         });
     });
