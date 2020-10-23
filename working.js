@@ -2,13 +2,16 @@
 const propertiesReader = require('properties-reader');
 const http = require('https');
 const fileSystem = require('fs');
-const args = require('minimist')(process.argv.slice(2))
+const commandLineArg = require('minimist')(process.argv.slice(2))
+const Client = require('node-rest-client').Client;  
+const client = new Client();
 
 let properies = loadProperties() ;
 let postData = 'data';
 let outPutFile = 'metadata_' + Date.now() +'.json';
 let downloadServerAuth = 'Basic ' + Buffer.from(`${properies.get('download.server.username')}:${properies.get('download.server.password')}`).toString('base64');
 let uploadServerAuth = 'Basic ' + Buffer.from(`${properies.get('upload.server.username')}:${properies.get('upload.server.password')}`).toString('base64');
+let inMemoryData = null;
 
 let getOptions = {
 	"hostname": properies.get('download.server.host'),
@@ -20,9 +23,16 @@ let getOptions = {
 	}
   };
 
-  let postOptions = {
-	"hostname": properies.get('upload.server.host'),
-	"path": properies.get('upload.server.path'),
+
+let getRequestArgs = {
+    headers: { 
+        "Content-Type": "application/json",
+        "Authorization": downloadServerAuth,
+        "Accept":"application/json"
+    }
+};
+
+  let postRequestArgs = {
 	"headers": {
 	  "Content-Type": "application/json",
 	  "Authorization": uploadServerAuth,
@@ -31,62 +41,50 @@ let getOptions = {
   };
 
 let downloadOrgUnitData = (getOptions) => {
+        return new Promise((resolve,reject) => {
+            client.get( properies.get('download.server.url'), getRequestArgs, (data, response) => {
+                    if ( response.statusCode === 200){
+                        console.log('Connected to server: ' + properies.get('download.server.host') + ' with statusCode: ' + response.statusCode );
+                        fileSystem.appendFile( outPutFile, JSON.stringify(data), function (err) {
+                            if (err) return console.error(err);
 
-    let data = [];
-    return new Promise((resolve,reject) => {
-        const req = http.get( getOptions, res => {
-            if ( res.statusCode  === 200 ){
-                console.log(`Connected to server: ${getOptions.hostname} with Status code ${res.statusCode}`);
-            }
-            else{
-                reject(`Connection with server: ${getOptions.hostname} refused with Status code ${res.statusCode}`);
-            }
-            res.on('data', receivedData => {
-                data.push( receivedData );                
-            })
-                .on('end', () => {
-                    fileSystem.appendFile( outPutFile, data, function (err) {
-                    if (err) return console.error(err);
-
-                    resolve('OrganisationUnit data downloaded in file: ' + outPutFile);
-                    }); 
-                })
-        });
+                            inMemoryData = JSON.stringify(data);
+                            resolve('Data downloaded in file: ' + outPutFile);
+                            }); 
+                    }
+                    else{
+                        reject('Connection with server ' + properies.get('download.server.host') +' refused with statusCode: ' + response.statusCode)
+                    }
+            
+            });
         
-        req.on('error', error => {
-            reject(error);
-          });
-    });
+        });
 }
 
 let uploadOrgUnitData = ( postOptions ) => {
-    return new Promise((resolve,reject) => {
-        const req = http.post( getOptions, res => {
-            if (res.statusCode  === 200){
-            console.log(`Connected to server: ${postOptions.hostname} with Status code ${res.statusCode}`);
-            }
-            else{
-                reject(`Connection with server: ${postOptions.hostname} refused with Status code ${res.statusCode}`);
-            }
-        });
+         return new Promise((resolve,reject) => {
+             client.post( properies.get('upload.server.url'), postRequestArgs, (data, response) => {
+                if ( response.statusCode === 200){
+                    console.log('Connected to server: ' + properies.get('upload.server.host') + ' with statusCode: ' + response.statusCode );
+                }
+                else{
+                    reject('Connection with server ' + properies.get('upload.server.host') +' refused with statusCode: ' + response.statusCode)
+                }
         
-        req.on('error', error => {
-            reject(error);
-          });
-          
-        req.end();
+        }); 
+
     });
 }
 
 function loadProperties()
 {
-    if ( !fileSystem.existsSync(args['file'])){
+    if ( !fileSystem.existsSync(commandLineArg['file'])){
         console.error('Properties file not found');
         process.exit();
     }
 
     console.log('Loading properties from file');
-    return new propertiesReader(args['file']);
+    return new propertiesReader(commandLineArg['file']);
 }
 
 let startSynchronization = async () => {
@@ -94,7 +92,7 @@ let startSynchronization = async () => {
     let downloadResponse = await downloadOrgUnitData(getOptions).catch(error => console.error(error));
     console.log(downloadResponse);
 
-    let uploadResponse = await uploadOrgUnitData(postOptions).catch(error => console.error(error));
+    let uploadResponse = await uploadOrgUnitData(postRequestArgs).catch(error => console.error(error));
     console.log(uploadResponse);
 }
 

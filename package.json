@@ -3,7 +3,8 @@
   "description": "DHIS2 OrganisationUnit synchronization script",
   "author": "Zubair Asghar <zubair@dhis2.org>",
   "dependencies": {
-    "properties-reader": "~0.3.1"
+    "properties-reader": "~0.3.1",
+    "node-rest-client": "3.1.0"
   },
   "repository": {
     "type": "git",
