@@ -1,0 +1,9 @@
+download.server.host=play.dhis2.org
+download.server.username=system
+download.server.password=System123
+download.server.url=<complete api path>
+
+upload.server.host=localhost
+upload.server.username=system
+upload.server.password=System123
+upload.server.url=<complete api path>
