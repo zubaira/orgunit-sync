@@ -26,18 +26,23 @@ let downloadData = (getRequestArgs) => {
             client.get( properies.get('download.server.url'), getRequestArgs, (data, response) => {
                     if ( response.statusCode === 200){
                         console.log('Connected to server: ' + properies.get('download.server.host') + ' with statusCode: ' + response.statusCode );
-                        fileSystem.appendFile( outPutFile, JSON.stringify(data), function (err) {
-                            if (err) return console.error(err);
 
-                            inMemoryData = JSON.stringify(data);
-                            resolve('Data downloaded in file: ' + outPutFile);
-                            }); 
+                        if(commandLineArg['o']){
+                            fileSystem.appendFile( outPutFile, JSON.stringify(data), function (err) {
+                                if (err) return console.error(err);
+    
+                                inMemoryData = JSON.stringify(data);
+                                resolve('Data downloaded in file: ' + outPutFile);
+                                }); 
+                        }
+                        else{
+                                resolve('Data downloaded');
+                        }
                     }
                     else{
                         reject('Connection with server ' + properies.get('download.server.host') +' refused with statusCode: ' + response.statusCode)
                     }
             });
-        
         });
 }
 
