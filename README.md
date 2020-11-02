@@ -4,7 +4,7 @@ The purpose of this script is to synchronize two DHIS2 instances provided they a
 
 ## How to use it
 
-1. Simply clone this git repo.
+1. Simply clone this git repo. `git clone git@github.com:zubaira/orgunit-sync.git`
 2. Install npm(node package manager) if its not there on the machein. Command for node installation `sudo apt install nodejs`
 3. Check if node is installed using `nodejs -v`
 4. Run `npm install` in the root directory of this script.
